@@ -1,4 +1,4 @@
-# *Recurrent Deformable Fusion for Compressed Video Artifact Reduction* (RDFN)
+# *Recurrent Deformable Fusion for Compressed Video Artifact Reduction*
 
 
 The *official* implementation for the Recurrent Deformable Fusion for Compressed Video Artifact Reduction which is accepted by [ISCAS 2022].
