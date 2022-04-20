@@ -1,0 +1,82 @@
+dataset:
+  train:  # LMDB
+    type: MFQEv2Dataset
+    
+    # for lmdb
+    root: /data/MFQEv2_dataset
+    gt_folder: train_108/raw/
+    lq_folder: train_108/HM16.5_LDP/QP37/
+
+    # for dataset
+    gt_path: mfqev2_train_gt_R3_QP37.lmdb
+    lq_path: mfqev2_train_lq_R3_QP37.lmdb
+    meta_info_fp: meta_info.txt
+
+    gt_size: 240  # ground truth patch size: gt_size * gt_size
+    use_flip: True
+    use_rot: True  # rotation per 90 degrees
+    random_reverse: False
+
+    # for datasampler
+    enlarge_ratio: 100  # enlarge dataset by randomly cropping.
+    
+    # for dataloader
+    num_worker_per_gpu: 6  # 12 in total. mainly affect IO speed
+    batch_size_per_gpu: 4  # bs=32, divided by 4 GPUs
+
+  val:  # Disk IO
+    type: VideoTestMFQEv2Dataset
+    gt_path: test_18/raw/
+    lq_path: test_18/HM16.5_LDP/QP37/
+    #meta_info_fp: meta_info.txt
+    #enlarge_ratio: 1
+    #use_flip: False
+    #use_rot: False
+    #random_reverse: False
+
+  test:
+    type: VideoTestMFQEv2Dataset
+    gt_path: test_18/raw/
+    lq_path: test_18/HM16.5_LDP/QP37/
+
+network:
+  radius: 3  # total num of input frame = 2 * radius + 1
+
+
+train:
+  exp_name: RDFN  # default: timestr. None: ~
+  random_seed: 7
+  pre-val: False  # evaluate criterion before training, e.g., ori PSNR
+  num_iter: !!float 3e+5
+  interval_print: !!float 100
+  interval_val: !!float 5e+3  # also save model
+  pbar_len: 100
+
+  optim:
+    type: Adam
+    lr: !!float 1e-4  # init lr of scheduler
+    betas: [0.9, 0.999]
+    eps: !!float 1e-08
+
+  scheduler:
+    is_on: False
+    type: CosineAnnealingRestartLR
+    periods: [!!float 5e+4, !!float 5e+4, !!float 5e+4, !!float 5e+4, !!float 5e+4, !!float 5e+4]  # epoch interval
+    restart_weights: [0.3, 0.3, 0.3, 0.2, 0.2, 0.2]
+    eta_min: !!float 1e-7
+
+  loss:
+    type: CharbonnierLoss
+    eps: !!float 1e-6
+
+  criterion:
+    type: PSNR
+    unit: dB
+
+test:
+  restore_iter: !!float 290000
+  pbar_len: 100
+
+  criterion:
+    type: PSNR
+    unit: dB
